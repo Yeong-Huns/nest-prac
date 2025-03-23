@@ -1,0 +1,22 @@
+@hostname = localhost
+@port = 3000
+@api = movie
+@test_id = 4
+
+### Get (전체조회)
+GET http://{{hostname}}:{{port}}/{{api}}
+
+### Get (이름으로 조회)
+GET http://{{hostname}}:{{port}}/{{api}}?name=해리
+
+### Create
+POST http://{{hostname}}:{{port}}/{{api}}
+Content-Type: application/json
+
+{
+  "name": "셜록홈즈",
+  "character": ["셜록 홈즈", "존 왓슨"]
+}
+
+### Delete
+DELETE http://{{hostname}}:{{port}}/{{api}}/{{test_id}}
