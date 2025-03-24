@@ -1,4 +1,4 @@
-export class CreateMovieDTO {
+export class CreateMovieDto {
   name: string;
   character: string[];
 }

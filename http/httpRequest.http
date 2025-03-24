@@ -18,5 +18,15 @@ Content-Type: application/json
   "character": ["셜록 홈즈", "존 왓슨"]
 }
 
+### Update
+PATCH http://{{hostname}}:{{port}}/{{api}}/{{test_id}}
+Content-Type: application/json
+
+{
+  "name": "나니아 연대기",
+  "character": ["몰라 레후"]
+}
+
+
 ### Delete
 DELETE http://{{hostname}}:{{port}}/{{api}}/{{test_id}}
