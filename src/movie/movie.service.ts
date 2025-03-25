@@ -5,21 +5,24 @@ import { Movie } from './entities/movie.entity';
 
 @Injectable()
 export class MovieService {
-  private idCounter = 4;
+  idCounter = 4;
   private movies: Movie[] = [
     new Movie({
       id: 1,
       name: '해리포터',
+      genre: 'action',
       character: ['해리포터', '엠마왓슨'],
     }),
     new Movie({
       id: 2,
       name: '해리포터2',
+      genre: 'action',
       character: ['해리포터', '엠마왓슨'],
     }),
     new Movie({
       id: 3,
       name: '해리포터3',
+      genre: 'action',
       character: ['해리포터', '엠마왓슨'],
     }),
   ];

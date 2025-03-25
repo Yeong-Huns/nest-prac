@@ -15,16 +15,18 @@ Content-Type: application/json
 
 {
   "name": "셜록홈즈",
+  "genre": "action",
   "character": ["셜록 홈즈", "존 왓슨"]
 }
 
 ### Update
-PATCH http://{{hostname}}:{{port}}/{{api}}/{{test_id}}
+PUT http://{{hostname}}:{{port}}/{{api}}/{{test_id}}
 Content-Type: application/json
 
 {
-  "name": "나니아 연대기",
-  "character": ["몰라 레후"]
+  "name": "나니아",
+  "genre": "fantasy",
+  "character": [""]
 }
 
 
