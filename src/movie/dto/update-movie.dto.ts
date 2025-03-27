@@ -1,11 +1,4 @@
-import {
-  ArrayNotEmpty,
-  IsIn,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  ValidateIf,
-} from 'class-validator';
+import { ArrayNotEmpty, IsIn, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class UpdateMovieDto {
   @IsNotEmpty({ message: '영화 이름은 비어있을 수 없습니다.' })
@@ -16,8 +9,6 @@ export class UpdateMovieDto {
   @IsIn(['fantasy', 'action'], {
     message: '장르는 action, 혹은 fantasy 여야 합니다.',
   })
-  @IsNotEmpty()
-  @IsString()
   @IsOptional()
   genre?: string;
 

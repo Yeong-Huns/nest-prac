@@ -24,9 +24,7 @@ PUT http://{{hostname}}:{{port}}/{{api}}/{{test_id}}
 Content-Type: application/json
 
 {
-  "name": "나니아",
-  "genre": "fantasy",
-  "character": [""]
+  "name": null
 }
 
 
