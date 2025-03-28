@@ -1,22 +1,19 @@
 import { UpdateMovieDto } from '../dto/update-movie.dto';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
+@Entity()
 export class Movie {
+  @PrimaryGeneratedColumn()
   id: number;
-  name: string;
-  genre: string;
-  character: string[];
 
-  constructor(data: {
-    id: number;
-    name: string;
-    genre: string;
-    character: string[];
-  }) {
-    this.id = data.id;
-    this.name = data.name;
-    this.genre = data.genre;
-    this.character = data.character;
-  }
+  @Column()
+  name: string;
+
+  @Column()
+  genre: string;
+
+  @Column('text', { array: true })
+  character: string[];
 
   updateMovie(updateMovieDto: UpdateMovieDto) {
     Object.assign(this, {

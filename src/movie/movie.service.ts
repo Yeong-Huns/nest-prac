@@ -2,63 +2,47 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { Movie } from './entities/movie.entity';
+import { Like, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class MovieService {
-  idCounter = 4;
-  private movies: Movie[] = [
-    new Movie({
-      id: 1,
-      name: '해리포터',
-      genre: 'action',
-      character: ['해리포터', '엠마왓슨'],
-    }),
-    new Movie({
-      id: 2,
-      name: '해리포터2',
-      genre: 'action',
-      character: ['해리포터', '엠마왓슨'],
-    }),
-    new Movie({
-      id: 3,
-      name: '해리포터3',
-      genre: 'action',
-      character: ['해리포터', '엠마왓슨'],
-    }),
-  ];
+  constructor(
+    @InjectRepository(Movie)
+    private readonly movieRepository: Repository<Movie>,
+  ) {}
 
-  create(createMovieDto: CreateMovieDto) {
-    const newMovie: Movie = new Movie({
-      id: this.idCounter,
+  async create(createMovieDto: CreateMovieDto) {
+    const movie = this.movieRepository.create({
       ...createMovieDto,
     });
-    this.idCounter++;
-    this.movies.push(newMovie);
+    return this.movieRepository.save(movie);
   }
 
-  findAll(name?: string) {
+  async findAll(name?: string) {
     if (!name) {
-      return this.movies;
+      return await this.movieRepository.find();
     }
-    return this.movies.filter((movie) => movie.name.startsWith(name));
+    return await this.movieRepository.findAndCountBy({
+      name: Like(`%${name}%`),
+    });
   }
 
-  findOne(id: number) {
-    const movie = this.movies.find((movie) => movie.id === +id);
+  async findOne(id: number) {
+    const movie = await this.movieRepository.findBy({ id: id });
     if (!movie) throw new NotFoundException(`Movie ${id} not found`);
     return movie;
   }
 
-  update(id: number, updateMovieDto: UpdateMovieDto) {
-    const movie = this.movies.find((movie) => movie.id === +id);
+  async update(id: number, updateMovieDto: UpdateMovieDto) {
+    const movie = await this.movieRepository.findBy({ id: id });
     if (!movie) throw new NotFoundException(`Movie ${id} not found`);
-    return movie.updateMovie(updateMovieDto);
+    return await this.movieRepository.update(id, updateMovieDto);
   }
 
-  remove(id: number) {
-    const movie = this.movies.find((movie) => movie.id === +id);
+  async remove(id: number) {
+    const movie = await this.movieRepository.findBy({ id: id });
     if (!movie) throw new NotFoundException(`Movie ${id} not found`);
-    this.movies = this.movies.filter((movie) => movie.id !== +id);
-    return this.movies;
+    return await this.movieRepository.delete(id);
   }
 }

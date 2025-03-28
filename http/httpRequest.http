@@ -1,22 +1,22 @@
 @hostname = localhost
 @port = 3000
 @api = movie
-@test_id = 4
+@test_id = 3
 
 ### Get (전체조회)
 GET http://{{hostname}}:{{port}}/{{api}}
 
 ### Get (이름으로 조회)
-GET http://{{hostname}}:{{port}}/{{api}}?name=해리
+GET http://{{hostname}}:{{port}}/{{api}}?name=셜록
 
 ### Create
 POST http://{{hostname}}:{{port}}/{{api}}
 Content-Type: application/json
 
 {
-  "name": "셜록홈즈",
-  "genre": "action",
-  "character": ["셜록 홈즈", "존 왓슨"]
+  "name": "해리포터",
+  "genre": "fantasy",
+  "character": ["해리"]
 }
 
 ### Update
@@ -24,7 +24,7 @@ PUT http://{{hostname}}:{{port}}/{{api}}/{{test_id}}
 Content-Type: application/json
 
 {
-  "name": null
+  "name": "다주방굽뿡"
 }
 
 
