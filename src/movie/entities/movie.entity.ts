@@ -1,8 +1,15 @@
-import { UpdateMovieDto } from '../dto/update-movie.dto';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { BaseEntity } from '../../common/baseEntity/base.entity';
+import { MovieDetail } from './movie-detail.entity';
 
 @Entity()
-export class Movie {
+export class Movie extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -15,10 +22,7 @@ export class Movie {
   @Column('text', { array: true })
   character: string[];
 
-  updateMovie(updateMovieDto: UpdateMovieDto) {
-    Object.assign(this, {
-      ...this,
-      ...updateMovieDto,
-    });
-  }
+  @OneToOne(() => MovieDetail, { nullable: true })
+  @JoinColumn()
+  movieDetail: MovieDetail;
 }

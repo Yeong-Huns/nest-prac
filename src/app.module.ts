@@ -3,7 +3,8 @@ import { MovieModule } from './movie/movie.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
-import { Movie } from './movie/entities/movie.entity'; // 올바른 임포트 방식
+import { Movie } from './movie/entities/movie.entity';
+import { MovieDetail } from './movie/entities/movie-detail.entity'; // 올바른 임포트 방식
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { Movie } from './movie/entities/movie.entity'; // 올바른 임포트 �
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        entities: [Movie],
+        entities: [Movie, MovieDetail],
         synchronize: true,
       }),
       inject: [ConfigService],

@@ -1,22 +1,26 @@
 @hostname = localhost
 @port = 3000
 @api = movie
-@test_id = 3
+@test_id = 5
 
 ### Get (전체조회)
 GET http://{{hostname}}:{{port}}/{{api}}
 
 ### Get (이름으로 조회)
-GET http://{{hostname}}:{{port}}/{{api}}?name=셜록
+GET http://{{hostname}}:{{port}}/{{api}}?name=해리
+
+### Get (id로 조회)
+GET http://{{hostname}}:{{port}}/{{api}}/{{test_id}}
 
 ### Create
 POST http://{{hostname}}:{{port}}/{{api}}
 Content-Type: application/json
 
 {
-  "name": "해리포터",
+  "name": "동물의왕국2",
   "genre": "fantasy",
-  "character": ["해리"]
+  "character": ["ㅇ"],
+  "detail": "디테일"
 }
 
 ### Update
@@ -24,7 +28,7 @@ PUT http://{{hostname}}:{{port}}/{{api}}/{{test_id}}
 Content-Type: application/json
 
 {
-  "name": "다주방굽뿡"
+  "name": "사냥의시간2"
 }
 
 
