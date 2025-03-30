@@ -17,24 +17,15 @@ export class MovieService {
   ) {}
 
   async create(createMovieDto: CreateMovieDto) {
-    const movie = this.movieRepository.create({
+    const movie = await this.movieRepository.save({
       name: createMovieDto.name,
       genre: createMovieDto.genre,
       character: createMovieDto.character,
+      movieDetail: {
+        detail: createMovieDto?.detail ?? null,
+      },
     });
-
-    let movieDetail: MovieDetail | null = null;
-
-    if (createMovieDto.detail) {
-      movieDetail = this.movieDetailRepository.create({
-        detail: createMovieDto.detail,
-      });
-      await this.movieDetailRepository.save(movieDetail);
-    }
-
-    movie.movieDetail = movieDetail;
-    const savedMovie = await this.movieRepository.save(movie);
-    return MovieResponse.fromMovie(savedMovie);
+    return MovieResponse.fromMovie(movie);
   }
 
   async findAll(name?: string) {
@@ -63,11 +54,33 @@ export class MovieService {
   }
 
   async update(id: number, updateMovieDto: UpdateMovieDto) {
-    const movie = await this.movieRepository.findBy({ id: id });
+    const movie = await this.movieRepository.findOne({
+      where: { id: id },
+      relations: ['movieDetail'],
+    });
     if (!movie) throw new NotFoundException(`Movie ${id} not found`);
-    await this.movieRepository.update(id, updateMovieDto);
+
+    const { detail, ...restUpdateMovieDto } = updateMovieDto;
+
+    await this.movieRepository.update(id, restUpdateMovieDto);
+    if (detail) {
+      if (movie.movieDetail) {
+        await this.movieDetailRepository.update(
+          { id: movie.movieDetail.id },
+          { detail },
+        );
+      } else {
+        const newMovieDetail = this.movieDetailRepository.create({ detail });
+        movie.movieDetail =
+          await this.movieDetailRepository.save(newMovieDetail);
+        await this.movieRepository.save(movie);
+      }
+    }
     return MovieResponse.fromMovie(
-      await this.movieRepository.findOneBy({ id: id }),
+      await this.movieRepository.findOne({
+        where: { id: id },
+        relations: ['movieDetail'],
+      }),
     );
   }
 

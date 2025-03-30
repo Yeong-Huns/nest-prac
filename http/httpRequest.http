@@ -1,7 +1,7 @@
 @hostname = localhost
 @port = 3000
 @api = movie
-@test_id = 5
+@test_id = 7
 
 ### Get (전체조회)
 GET http://{{hostname}}:{{port}}/{{api}}
@@ -17,10 +17,10 @@ POST http://{{hostname}}:{{port}}/{{api}}
 Content-Type: application/json
 
 {
-  "name": "동물의왕국2",
+  "name": "몬스터헌터와일즈",
   "genre": "fantasy",
-  "character": ["ㅇ"],
-  "detail": "디테일"
+  "character": ["리오레우스"],
+  "detail": "몬스터헌터 시리즈 최신작"
 }
 
 ### Update
@@ -28,7 +28,8 @@ PUT http://{{hostname}}:{{port}}/{{api}}/{{test_id}}
 Content-Type: application/json
 
 {
-  "name": "사냥의시간2"
+  "name": "몬스터헌터 와일즈",
+  "detail": "몬스터헌터 시리즈 최신작입니다."
 }
 
 

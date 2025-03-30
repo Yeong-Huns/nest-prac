@@ -22,7 +22,10 @@ export class Movie extends BaseEntity {
   @Column('text', { array: true })
   character: string[];
 
-  @OneToOne(() => MovieDetail, { nullable: true })
+  @OneToOne(() => MovieDetail, (movieDetail) => movieDetail.movie, {
+    nullable: true,
+    cascade: true,
+  })
   @JoinColumn()
   movieDetail: MovieDetail;
 }

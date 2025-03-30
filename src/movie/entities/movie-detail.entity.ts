@@ -8,6 +8,6 @@ export class MovieDetail {
   @Column()
   detail: string;
 
-  @OneToOne(() => Movie)
+  @OneToOne(() => Movie, (movie) => movie.movieDetail, { onDelete: 'CASCADE' })
   movie: Movie;
 }

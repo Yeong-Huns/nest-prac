@@ -21,7 +21,6 @@ export class MovieResponse {
   }
 
   static fromMovie(movie: Movie) {
-    console.log(movie);
     return new MovieResponse(movie);
   }
 }
