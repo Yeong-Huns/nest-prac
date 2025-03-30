@@ -1,0 +1,30 @@
+@hostname = localhost
+@port = 3000
+@api = director
+@test_id = 2
+
+### Get (전체조회)
+GET http://{{hostname}}:{{port}}/{{api}}
+
+
+### Create
+POST http://{{hostname}}:{{port}}/{{api}}
+Content-Type: application/json
+
+{
+  "name": "크리스토퍼 놀란",
+  "dob":"1970-07-30",
+  "nationality": "영국"
+}
+
+
+### Update
+PATCH http://{{hostname}}:{{port}}/{{api}}/{{test_id}}
+Content-Type: application/json
+
+{
+  "nationality": "영국"
+}
+
+### Delete
+DELETE http://{{hostname}}:{{port}}/{{api}}/{{test_id}}

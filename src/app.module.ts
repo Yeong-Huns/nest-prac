@@ -5,6 +5,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
 import { Movie } from './movie/entities/movie.entity';
 import { MovieDetail } from './movie/entities/movie-detail.entity'; // 올바른 임포트 방식
+import { DirectorModule } from './director/director.module';
+import { Director } from './director/entities/director.entity';
 
 @Module({
   imports: [
@@ -28,12 +30,13 @@ import { MovieDetail } from './movie/entities/movie-detail.entity'; // 올바른
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        entities: [Movie, MovieDetail],
+        entities: [Movie, MovieDetail, Director],
         synchronize: true,
       }),
       inject: [ConfigService],
     }),
     MovieModule,
+    DirectorModule,
   ],
 })
 export class AppModule {}
