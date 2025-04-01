@@ -3,7 +3,7 @@ import { dateFormatter } from '../../common/utils/date-formatter';
 
 export class MovieResponse {
   name: string;
-  genre: string;
+  genre: string[];
   character: string[];
   detail: string | null;
   createdAt: string;
@@ -13,7 +13,7 @@ export class MovieResponse {
 
   private constructor(movie: Movie) {
     this.name = movie.name;
-    this.genre = movie.genre;
+    this.genre = movie.genres.map((genre) => genre.name);
     this.character = movie.character;
     this.detail = movie.movieDetail?.detail ?? null;
     this.createdAt = dateFormatter(movie.createdAt.toISOString());

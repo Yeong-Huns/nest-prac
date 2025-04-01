@@ -2,6 +2,8 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -9,6 +11,7 @@ import {
 import { BaseEntity } from '../../common/baseEntity/base.entity';
 import { MovieDetail } from './movie-detail.entity';
 import { Director } from '../../director/entities/director.entity';
+import { Genre } from '../../genre/entities/genre.entity';
 
 @Entity()
 export class Movie extends BaseEntity {
@@ -19,9 +22,6 @@ export class Movie extends BaseEntity {
     unique: true,
   })
   name: string;
-
-  @Column()
-  genre: string;
 
   @Column('text', { array: true })
   character: string[];
@@ -39,4 +39,8 @@ export class Movie extends BaseEntity {
   })
   @JoinColumn()
   director: Director;
+
+  @ManyToMany(() => Genre, (genre) => genre.movies, {})
+  @JoinTable()
+  genres: Genre[];
 }

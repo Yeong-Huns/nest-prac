@@ -1,0 +1,30 @@
+@hostname = localhost
+@port = 3000
+@api = genre
+@test_id = 1
+
+### Get (전체조회)
+GET http://{{hostname}}:{{port}}/{{api}}
+
+### Get (단건조회)
+GET http://{{hostname}}:{{port}}/{{api}}/{{test_id}}
+
+### Create
+POST http://{{hostname}}:{{port}}/{{api}}
+Content-Type: application/json
+
+{
+  "name": "판타지"
+}
+
+### Update
+PATCH http://{{hostname}}:{{port}}/{{api}}/{{test_id}}
+Content-Type: application/json
+
+{
+  "name": "액션"
+}
+
+
+### Delete
+DELETE http://{{hostname}}:{{port}}/{{api}}/{{test_id}}
