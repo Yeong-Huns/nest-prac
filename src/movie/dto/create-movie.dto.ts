@@ -13,4 +13,7 @@ export class CreateMovieDto {
   @IsOptional()
   @IsNotEmpty()
   detail: string;
+
+  @IsNotEmpty()
+  directorId: number;
 }

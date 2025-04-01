@@ -15,7 +15,9 @@ export class Movie extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({
+    unique: true,
+  })
   name: string;
 
   @Column()
@@ -31,7 +33,10 @@ export class Movie extends BaseEntity {
   @JoinColumn()
   movieDetail: MovieDetail;
 
-  @ManyToOne(() => Director, (director) => director.movies, {})
+  @ManyToOne(() => Director, (director) => director.movies, {
+    cascade: true,
+    nullable: false,
+  })
   @JoinColumn()
   director: Director;
 }

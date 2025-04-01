@@ -9,6 +9,7 @@ export class MovieResponse {
   createdAt: string;
   updatedAt: string;
   version: number;
+  director: string;
 
   private constructor(movie: Movie) {
     this.name = movie.name;
@@ -18,6 +19,7 @@ export class MovieResponse {
     this.createdAt = dateFormatter(movie.createdAt.toISOString());
     this.updatedAt = dateFormatter(movie.updatedAt.toISOString());
     this.version = movie.version;
+    this.director = movie.director.name;
   }
 
   static fromMovie(movie: Movie) {

@@ -17,10 +17,11 @@ POST http://{{hostname}}:{{port}}/{{api}}
 Content-Type: application/json
 
 {
-  "name": "몬스터헌터와일즈",
+  "name": "인셉션",
   "genre": "fantasy",
-  "character": ["리오레우스"],
-  "detail": "몬스터헌터 시리즈 최신작"
+  "character": ["레오나르도 디카프리오"],
+  "detail": "인셉션입니다.",
+  "directorId": 2
 }
 
 ### Update
@@ -29,7 +30,8 @@ Content-Type: application/json
 
 {
   "name": "몬스터헌터 와일즈",
-  "detail": "몬스터헌터 시리즈 최신작입니다."
+  "detail": "몬스터헌터 시리즈 최신작입니다.",
+  "directorId": 2
 }
 
 

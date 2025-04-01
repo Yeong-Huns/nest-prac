@@ -19,4 +19,8 @@ export class UpdateMovieDto {
   @IsNotEmpty({ message: 'detail 내용을 입력해주세요.' })
   @IsOptional()
   detail?: string;
+
+  @IsNotEmpty()
+  @IsOptional()
+  directorId: number;
 }
