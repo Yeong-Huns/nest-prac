@@ -2,11 +2,12 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { Movie } from './entities/movie.entity';
-import { Like, Repository } from 'typeorm';
+import { In, Like, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MovieResponse } from './dto/movie-response.dto';
 import { MovieDetail } from './entities/movie-detail.entity';
 import { Director } from '../director/entities/director.entity';
+import { Genre } from '../genre/entities/genre.entity';
 
 @Injectable()
 export class MovieService {
@@ -17,36 +18,76 @@ export class MovieService {
     private readonly movieDetailRepository: Repository<MovieDetail>,
     @InjectRepository(Director)
     private readonly directorRepository: Repository<Director>,
+    @InjectRepository(Genre)
+    private readonly genreRepository: Repository<Genre>,
   ) {}
 
   async create(createMovieDto: CreateMovieDto) {
+    const { directorId, genres, detail, ...movieData } = createMovieDto;
+    const [director, movieGenres, movieDetail] = await Promise.all([
+      this.findDirectorById(directorId),
+      this.findOrCreateGenres(genres),
+      this.findOrCreateMovieDetail(detail),
+    ]);
+    const movie = await this.movieRepository.save({
+      ...movieData,
+      movieDetail: movieDetail,
+      director: director,
+      genres: movieGenres,
+    });
+    return MovieResponse.fromMovie(movie);
+  }
+
+  /* Director 검색 */
+  private async findDirectorById(
+    directorId: number,
+    relations: string[] = ['movieDetail', 'director'],
+  ) {
     const director = await this.directorRepository.findOne({
-      where: {
-        id: createMovieDto.directorId,
-      },
+      where: { id: directorId },
+      relations,
     });
 
     if (!director) {
-      throw new NotFoundException('Director not found');
+      throw new NotFoundException(`Director with id ${directorId} not found`);
     }
 
-    const movie = await this.movieRepository.save({
-      name: createMovieDto.name,
-      genre: createMovieDto.genre,
-      character: createMovieDto.character,
-      movieDetail: {
-        detail: createMovieDto?.detail ?? null,
-      },
-      director: director,
+    return director;
+  }
+
+  private async findOrCreateGenres(names: string[]) {
+    const existingGenres = await this.genreRepository.find({
+      where: { name: In(names) },
     });
-    return MovieResponse.fromMovie(movie);
+    const existingGenreNames = existingGenres.map((genre) => genre.name);
+
+    const newGenreNames = names.filter(
+      (name) => !existingGenreNames.includes(name),
+    );
+    if (newGenreNames.length === 0) return existingGenres;
+
+    const newGenres = newGenreNames.map((name) =>
+      this.genreRepository.create({ name }),
+    );
+    const savedNewGenres = await this.genreRepository.save(newGenres);
+
+    return [...existingGenres, ...savedNewGenres];
+  }
+
+  private async findOrCreateMovieDetail(detail?: string) {
+    if (!detail) return null;
+
+    const existDetail = await this.movieDetailRepository.findOneBy({ detail });
+    if (existDetail) return existDetail;
+
+    return await this.movieDetailRepository.save({ detail });
   }
 
   async findAll(name?: string) {
     if (!name) {
       return (
         await this.movieRepository.find({
-          relations: ['movieDetail', 'director'],
+          relations: ['movieDetail', 'director', 'genres'],
         })
       ).map((movie) => MovieResponse.fromMovie(movie));
     }
@@ -55,7 +96,7 @@ export class MovieService {
         where: {
           name: Like(`%${name}%`),
         },
-        relations: ['movieDetail', 'director'],
+        relations: ['movieDetail', 'director', 'genres'],
       })
     ).map((searchResult) => MovieResponse.fromMovie(searchResult));
   }
@@ -63,14 +104,14 @@ export class MovieService {
   async findOne(id: number) {
     const movie = await this.movieRepository.findOne({
       where: { id: id },
-      relations: ['movieDetail', 'director'],
+      relations: ['movieDetail', 'director', 'genres'],
     });
     if (!movie) throw new NotFoundException(`Movie ${id} not found`);
     return MovieResponse.fromMovie(movie);
   }
 
   async update(id: number, updateMovieDto: UpdateMovieDto) {
-    const movie = await this.findMovieOrFail(id);
+    const movie = await this.findMovieById(id);
 
     const { detail, directorId, ...movieData } = updateMovieDto;
 
@@ -87,10 +128,13 @@ export class MovieService {
     return this.getUpdatedMovie(id);
   }
 
-  private async findMovieOrFail(id: number) {
+  private async findMovieById(
+    id: number,
+    relations: string[] = ['movieDetail', 'director'],
+  ) {
     const movie = await this.movieRepository.findOne({
       where: { id },
-      relations: ['movieDetail', 'director'],
+      relations,
     });
 
     if (!movie) {

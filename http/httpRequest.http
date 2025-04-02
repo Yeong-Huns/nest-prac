@@ -17,11 +17,11 @@ POST http://{{hostname}}:{{port}}/{{api}}
 Content-Type: application/json
 
 {
-  "name": "인셉션",
-  "genre": "fantasy",
-  "character": ["레오나르도 디카프리오"],
-  "detail": "인셉션입니다.",
-  "directorId": 2
+  "name": "신비한 동물 사전2",
+  "genres": ["액션", "판타지", "마법"],
+  "character": ["마법사", "덤블도어"],
+  "detail": "해리포터 전작2.",
+  "directorId": 1
 }
 
 ### Update

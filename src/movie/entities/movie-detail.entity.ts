@@ -5,7 +5,10 @@ import { Movie } from './movie.entity';
 export class MovieDetail {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column()
+  @Column({
+    unique: true,
+    nullable: false,
+  })
   detail: string;
 
   @OneToOne(() => Movie, (movie) => movie.movieDetail, { onDelete: 'CASCADE' })

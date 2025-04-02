@@ -40,7 +40,10 @@ export class Movie extends BaseEntity {
   @JoinColumn()
   director: Director;
 
-  @ManyToMany(() => Genre, (genre) => genre.movies, {})
+  @ManyToMany(() => Genre, (genre) => genre.movies, {
+    cascade: true,
+    nullable: false,
+  })
   @JoinTable()
   genres: Genre[];
 }
