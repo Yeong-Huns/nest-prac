@@ -1,7 +1,7 @@
 @hostname = localhost
 @port = 3000
 @api = movie
-@test_id = 7
+@test_id = 5
 
 ### Get (전체조회)
 GET http://{{hostname}}:{{port}}/{{api}}
@@ -29,9 +29,11 @@ PUT http://{{hostname}}:{{port}}/{{api}}/{{test_id}}
 Content-Type: application/json
 
 {
-  "name": "몬스터헌터 와일즈",
-  "detail": "몬스터헌터 시리즈 최신작입니다.",
-  "directorId": 2
+  "name": "신비한 동물 사전 2",
+  "detail": "해리포터 세계관의 프리퀄",
+  "character": ["뉴트 스캐맨더", "티나 골드스틴", "퀴니 골드스틴", "제이콥 코왈스키", "그린델왈드"],
+  "genres": ["액션", "판타지"],
+  "directorId": 1
 }
 
 

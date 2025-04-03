@@ -2,7 +2,8 @@ import {
   ArrayNotEmpty,
   IsArray,
   IsNotEmpty,
-  IsOptional, IsString,
+  IsOptional,
+  IsString,
 } from 'class-validator';
 
 export class CreateMovieDto {
