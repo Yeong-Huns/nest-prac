@@ -42,21 +42,37 @@ export class MovieService {
   }
 
   async findAll(name?: string) {
+    /*
+    1. 레포지토리 방식
     const options = {
       relations: ['movieDetail', 'director', 'genres'],
       where: name ? { name: Like(`%${name}%`) } : undefined,
     };
 
     const movies = await this.movieRepository.find(options);
-    return movies.map((movie) => MovieResponse.fromMovie(movie));
+    return movies.map((movie) => MovieResponse.fromMovie(movie));*/
+
+    const qb = this.movieRepository
+      .createQueryBuilder('movie')
+      .leftJoinAndSelect('movie.movieDetail', 'detail')
+      .leftJoinAndSelect('movie.director', 'director')
+      .leftJoinAndSelect('movie.genres', 'genres');
+
+    if (name) {
+      qb.where('movie.name LIKE :title', { title: `%${name}%` });
+    }
+
+    const result = await qb.getMany();
+
+    return result.map((movie) => MovieResponse.fromMovie(movie));
   }
 
   async findOne(id: number) {
-    const movie = await this.findMovieById(id, [
-      'movieDetail',
-      'director',
-      'genres',
-    ]);
+    const options = {
+      relations: ['movieDetail', 'director', 'genres'],
+      where: { id },
+    };
+    const movie = await this.movieRepository.findOne(options);
     return MovieResponse.fromMovie(movie);
   }
 
