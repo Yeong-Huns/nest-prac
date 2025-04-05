@@ -2,12 +2,13 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { Movie } from './entities/movie.entity';
-import { EntityManager, In, Like, Repository } from 'typeorm';
+import { EntityManager, In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MovieResponse } from './dto/movie-response.dto';
 import { MovieDetail } from './entities/movie-detail.entity';
 import { Director } from '../director/entities/director.entity';
 import { Genre } from '../genre/entities/genre.entity';
+import { async } from 'rxjs';
 
 @Injectable()
 export class MovieService {
@@ -24,21 +25,25 @@ export class MovieService {
 
   async create(createMovieDto: CreateMovieDto) {
     const { directorId, genres, detail, ...movieData } = createMovieDto;
+    return await this.movieRepository.manager.transaction(
+      'SERIALIZABLE',
+      async (manager) => {
+        const [director, movieGenres, movieDetail] = await Promise.all([
+          this.findDirectorById(directorId, manager),
+          this.findOrCreateGenres(genres, manager),
+          this.findOrCreateMovieDetail(detail, manager),
+        ]);
 
-    const [director, movieGenres, movieDetail] = await Promise.all([
-      this.findDirectorById(directorId),
-      this.findOrCreateGenres(genres),
-      this.findOrCreateMovieDetail(detail),
-    ]);
+        const movie = await manager.save(Movie, {
+          ...movieData,
+          movieDetail,
+          director,
+          genres: movieGenres,
+        });
 
-    const movie = await this.movieRepository.save({
-      ...movieData,
-      movieDetail,
-      director,
-      genres: movieGenres,
-    });
-
-    return MovieResponse.fromMovie(movie);
+        return MovieResponse.fromMovie(movie);
+      },
+    );
   }
 
   async findAll(name?: string) {
@@ -80,45 +85,48 @@ export class MovieService {
     const { detail, directorId, genres, ...movieData } = updateMovieDto;
 
     /* 트랜잭션으로 처리하여 데이터 일관성 유지 */
-    return await this.movieRepository.manager.transaction(async (manager) => {
-      /* 영화 존재 확인 */
-      const movie = await this.findMovieById(id);
+    return await this.movieRepository.manager.transaction(
+      'SERIALIZABLE' /* 트랜잭션 격리 수준*/,
+      async (manager) => {
+        /* 영화 존재 확인 */
+        const movie = await this.findMovieById(id);
 
-      /* 기본 영화 데이터 업데이트 */
-      if (Object.keys(movieData).length > 0) {
-        await manager.update(Movie, id, movieData);
-      }
+        /* 기본 영화 데이터 업데이트 */
+        if (Object.keys(movieData).length > 0) {
+          await manager.update(Movie, id, movieData);
+        }
 
-      /* 상세 정보 업데이트 */
-      if (detail) {
-        await this.updateMovieDetail(manager, movie, detail);
-      }
+        /* 상세 정보 업데이트 */
+        if (detail) {
+          await this.updateMovieDetail(manager, movie, detail);
+        }
 
-      /* 감독 업데이트 */
-      if (directorId) {
-        const director = await this.findDirectorById(directorId);
-        await manager.update(Movie, id, { director });
-      }
+        /* 감독 업데이트 */
+        if (directorId) {
+          const director = await this.findDirectorById(directorId);
+          await manager.update(Movie, id, { director });
+        }
 
-      /* 장르 업데이트 */
-      if (genres && genres.length > 0) {
-        const updatedGenres = await this.findOrCreateGenres(genres);
-        const movieToUpdate = await manager.findOne(Movie, {
+        /* 장르 업데이트 */
+        if (genres && genres.length > 0) {
+          const updatedGenres = await this.findOrCreateGenres(genres);
+          const movieToUpdate = await manager.findOne(Movie, {
+            where: { id },
+            relations: ['genres'],
+          });
+          movieToUpdate.genres = updatedGenres;
+          await manager.save(movieToUpdate);
+        }
+
+        /* 업데이트된 영화 반환 */
+        const updatedMovie = await manager.findOne(Movie, {
           where: { id },
-          relations: ['genres'],
+          relations: ['movieDetail', 'director', 'genres'],
         });
-        movieToUpdate.genres = updatedGenres;
-        await manager.save(movieToUpdate);
-      }
 
-      /* 업데이트된 영화 반환 */
-      const updatedMovie = await manager.findOne(Movie, {
-        where: { id },
-        relations: ['movieDetail', 'director', 'genres'],
-      });
-
-      return MovieResponse.fromMovie(updatedMovie);
-    });
+        return MovieResponse.fromMovie(updatedMovie);
+      },
+    );
   }
 
   async remove(id: number) {
@@ -144,10 +152,11 @@ export class MovieService {
     return movie;
   }
 
-  private async findDirectorById(directorId: number) {
-    const director = await this.directorRepository.findOne({
-      where: { id: directorId },
-    });
+  private async findDirectorById(
+    directorId: number,
+    manager: EntityManager = this.directorRepository.manager,
+  ) {
+    const director = manager.findOneBy(Director, { id: directorId });
 
     if (!director) {
       throw new NotFoundException(`Director with id ${directorId} not found`);
@@ -156,10 +165,13 @@ export class MovieService {
     return director;
   }
 
-  private async findOrCreateGenres(names: string[]) {
+  private async findOrCreateGenres(
+    names: string[],
+    manager: EntityManager = this.genreRepository.manager,
+  ) {
     if (!names || names.length === 0) return [];
 
-    const existingGenres = await this.genreRepository.find({
+    const existingGenres = await manager.find(Genre, {
       where: { name: In(names) },
     });
 
@@ -175,20 +187,23 @@ export class MovieService {
     const newGenres = newGenreNames.map((name) =>
       this.genreRepository.create({ name }),
     );
-    const savedNewGenres = await this.genreRepository.save(newGenres);
+    const savedNewGenres = await manager.save(Genre, newGenres);
 
     return [...existingGenres, ...savedNewGenres];
   }
 
-  private async findOrCreateMovieDetail(detail?: string) {
+  private async findOrCreateMovieDetail(
+    detail?: string,
+    manager: EntityManager = this.movieDetailRepository.manager,
+  ) {
     if (!detail) return null;
 
-    const existingDetail = await this.movieDetailRepository.findOneBy({
+    const existingDetail = await manager.findOneBy(MovieDetail, {
       detail,
     });
     if (existingDetail) return existingDetail;
 
-    return await this.movieDetailRepository.save({ detail });
+    return await manager.save(MovieDetail, { detail });
   }
 
   private async updateMovieDetail(

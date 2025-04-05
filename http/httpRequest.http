@@ -1,7 +1,7 @@
 @hostname = localhost
 @port = 3000
 @api = movie
-@test_id = 5
+@test_id = 6
 
 ### Get (전체조회)
 GET http://{{hostname}}:{{port}}/{{api}}
@@ -17,10 +17,10 @@ POST http://{{hostname}}:{{port}}/{{api}}
 Content-Type: application/json
 
 {
-  "name": "신비한 동물 사전2",
-  "genres": ["액션", "판타지", "마법"],
-  "character": ["마법사", "덤블도어"],
-  "detail": "해리포터 전작2.",
+  "name": "신비한 동물 사전3",
+  "genres": ["액션", "판타지", "마법", "서사"],
+  "character": ["마법사", "그린델왈드"],
+  "detail": "해리포터 프리퀄",
   "directorId": 1
 }
 
@@ -29,8 +29,8 @@ PUT http://{{hostname}}:{{port}}/{{api}}/{{test_id}}
 Content-Type: application/json
 
 {
-  "name": "신비한 동물 사전 2",
-  "detail": "해리포터 세계관의 프리퀄",
+  "name": "신비한 동물 사전 3",
+  "detail": "해리포터 세계관의 프리퀄.",
   "character": ["뉴트 스캐맨더", "티나 골드스틴", "퀴니 골드스틴", "제이콥 코왈스키", "그린델왈드"],
   "genres": ["액션", "판타지"],
   "directorId": 1
