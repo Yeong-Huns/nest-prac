@@ -1,0 +1,10 @@
+@hostname = localhost
+@port = 3000
+@api = auth
+@test_id = 1
+@encoded = c3R5bGVAZ21haWwuY29tOjFxMnczZTRyISE=
+
+### POST
+POST http://{{hostname}}:{{port}}/{{api}}/register
+Authorization: Basic dGVzdHVzZXIyQGdtYWlsLmNvbToxcTJ3M2U0ciEh
+
