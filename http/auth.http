@@ -4,7 +4,10 @@
 @test_id = 1
 @encoded = c3R5bGVAZ21haWwuY29tOjFxMnczZTRyISE=
 
-### POST
+### 신규 계정 등록
 POST http://{{hostname}}:{{port}}/{{api}}/register
-Authorization: Basic dGVzdHVzZXIyQGdtYWlsLmNvbToxcTJ3M2U0ciEh
+Authorization: Basic {{encoded}}
 
+### 로그인
+POST http://{{hostname}}:{{port}}/{{api}}/login
+Authorization: Basic {{encoded}}

@@ -17,4 +17,10 @@ export class AuthController {
     /* authorization: Basic $token */
     return this.authService.registerUser(token);
   }
+
+  @Post('login')
+  loginUser(@Headers('authorization') token: string) {
+    /* authorization: Basic $token */
+    return this.authService.login(token);
+  }
 }

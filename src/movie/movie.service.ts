@@ -8,7 +8,6 @@ import { MovieResponse } from './dto/movie-response.dto';
 import { MovieDetail } from './entities/movie-detail.entity';
 import { Director } from '../director/entities/director.entity';
 import { Genre } from '../genre/entities/genre.entity';
-import { async } from 'rxjs';
 
 @Injectable()
 export class MovieService {
@@ -63,13 +62,12 @@ export class MovieService {
       .leftJoinAndSelect('movie.director', 'director')
       .leftJoinAndSelect('movie.genres', 'genres');
 
+    /* 동적 쿼리 */
     if (name) {
       qb.where('movie.name LIKE :title', { title: `%${name}%` });
     }
 
-    const result = await qb.getMany();
-
-    return result.map((movie) => MovieResponse.fromMovie(movie));
+    return (await qb.getMany()).map((movie) => MovieResponse.fromMovie(movie));
   }
 
   async findOne(id: number) {

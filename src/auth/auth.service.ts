@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
@@ -11,6 +12,7 @@ export class AuthService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly configService: ConfigService,
+    private readonly jwtService: JwtService,
   ) {}
 
   parseBasicToken(rawToken: string) {
@@ -52,5 +54,53 @@ export class AuthService {
 
     /* 생성 유저 반환 */
     return await this.userRepository.findOneBy({ email });
+  }
+
+  async login(rawToken: string) {
+    const { email, password } = this.parseBasicToken(rawToken);
+    const user = await this.userRepository.findOneBy({ email });
+    if (!user) throw new BadRequestException('잘못된 로그인 정보입니다.');
+
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword)
+      throw new BadRequestException('잘못된 비밀번호 입니다.');
+
+    const accessTokenSecret = this.configService.get<string>(
+      'ACCESS_TOKEN_SECRET',
+    );
+    const refreshTokenSecret = this.configService.get<string>(
+      'REFRESH_TOKEN_SECRET',
+    );
+
+    return {
+      /* 리프레쉬 토큰 발급 */
+      refreshToken: await this.jwtService.signAsync(
+        /* 1. JWT payload 설정 */
+        {
+          sub: user.id,
+          role: user.role,
+          type: 'refresh',
+        },
+        /* 2.JWT signing & 만료 옵션 지정 */
+        {
+          secret: refreshTokenSecret,
+          expiresIn: '24h' /* 24시간 */,
+        },
+      ),
+      /* 엑세스 토큰 발급 */
+      accessToken: await this.jwtService.signAsync(
+        /* 1. JWT payload 설정 */
+        {
+          sub: user.id,
+          role: user.role,
+          type: 'access',
+        },
+        /* 2.JWT signing & 만료 옵션 지정 */
+        {
+          secret: accessTokenSecret,
+          expiresIn: 300 /* 300초(5분) */,
+        },
+      ),
+    };
   }
 }
