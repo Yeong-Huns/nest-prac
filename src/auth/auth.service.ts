@@ -56,14 +56,22 @@ export class AuthService {
     return await this.userRepository.findOneBy({ email });
   }
 
-  async login(rawToken: string) {
-    const { email, password } = this.parseBasicToken(rawToken);
+  async authenticate(email: string, password: string) {
     const user = await this.userRepository.findOneBy({ email });
     if (!user) throw new BadRequestException('잘못된 로그인 정보입니다.');
 
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword)
       throw new BadRequestException('잘못된 비밀번호 입니다.');
+
+    return user;
+  }
+
+  async login(rawToken: string) {
+    const { email, password } = this.parseBasicToken(rawToken);
+
+    /* validation*/
+    const user = await this.authenticate(email, password);
 
     const accessTokenSecret = this.configService.get<string>(
       'ACCESS_TOKEN_SECRET',

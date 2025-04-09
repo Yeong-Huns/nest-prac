@@ -11,3 +11,12 @@ Authorization: Basic {{encoded}}
 ### 로그인
 POST http://{{hostname}}:{{port}}/{{api}}/login
 Authorization: Basic {{encoded}}
+
+### Passport
+POST http://{{hostname}}:{{port}}/{{api}}/login/passport
+Content-Type: application/json
+
+{
+  "email":"style@gmail.com",
+  "password": "1q2w3e4r!!"
+}
