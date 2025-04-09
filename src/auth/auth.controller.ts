@@ -1,6 +1,7 @@
 import {
   ClassSerializerInterceptor,
   Controller,
+  Get,
   Headers,
   Post,
   Request,
@@ -11,6 +12,7 @@ import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from '../user/entities/user.entity';
 import { LocalAuthGuard } from './strategy/local.strategy';
+import { JwtAuthGuard } from './strategy/jwt.strategy';
 
 @Controller('auth')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -32,11 +34,21 @@ export class AuthController {
   /* Passport test */
   @UseGuards(LocalAuthGuard)
   @Post('login/passport')
-  loginPassport(@Request() request: PassportStrategyRequest) {
+  async loginPassport(@Request() request: LocalStrategyRequest) {
+    return {
+      refreshToken: await this.authService.issueToken(request.user, true),
+      accessToken: await this.authService.issueToken(request.user, false),
+    };
+  }
+
+  /* validation fail -> 요청을 튕김(Guard) */
+  @UseGuards(JwtAuthGuard)
+  @Get('private')
+  async private(@Request() request) {
     return request.user;
   }
 }
 
-interface PassportStrategyRequest extends Request {
+interface LocalStrategyRequest extends Request {
   user: User;
 }

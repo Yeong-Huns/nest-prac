@@ -3,7 +3,7 @@
 @api = auth
 @test_id = 1
 @encoded = c3R5bGVAZ21haWwuY29tOjFxMnczZTRyISE=
-
+@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsInJvbGUiOiJVU0VSIiwidHlwZSI6InVzZXIiLCJpYXQiOjE3NDQyMDg3MjIsImV4cCI6MTc0NDIwOTAyMn0.t26ofpAqz2PbKHYhULNS0JjhA1Tcnews33y_ijCvhLY
 ### 신규 계정 등록
 POST http://{{hostname}}:{{port}}/{{api}}/register
 Authorization: Basic {{encoded}}
@@ -20,3 +20,7 @@ Content-Type: application/json
   "email":"style@gmail.com",
   "password": "1q2w3e4r!!"
 }
+
+### ACCESS TOKEN 검증
+GET http://{{hostname}}:{{port}}/{{api}}/private
+Authorization: Bearer {{access_token}}

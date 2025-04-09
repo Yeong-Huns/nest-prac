@@ -67,48 +67,35 @@ export class AuthService {
     return user;
   }
 
-  async login(rawToken: string) {
-    const { email, password } = this.parseBasicToken(rawToken);
-
-    /* validation*/
-    const user = await this.authenticate(email, password);
-
+  async issueToken(user: User, isRefreshToken: boolean) {
     const accessTokenSecret = this.configService.get<string>(
       'ACCESS_TOKEN_SECRET',
     );
     const refreshTokenSecret = this.configService.get<string>(
       'REFRESH_TOKEN_SECRET',
     );
+    return await this.jwtService.signAsync(
+      {
+        sub: user.id,
+        role: user.role,
+        type: isRefreshToken ? 'refresh' : 'user',
+      },
+      {
+        secret: isRefreshToken ? refreshTokenSecret : accessTokenSecret,
+        expiresIn: isRefreshToken ? '24h' : 300,
+      },
+    );
+  }
+
+  async login(rawToken: string) {
+    const { email, password } = this.parseBasicToken(rawToken);
+
+    /* validation*/
+    const user = await this.authenticate(email, password);
 
     return {
-      /* 리프레쉬 토큰 발급 */
-      refreshToken: await this.jwtService.signAsync(
-        /* 1. JWT payload 설정 */
-        {
-          sub: user.id,
-          role: user.role,
-          type: 'refresh',
-        },
-        /* 2.JWT signing & 만료 옵션 지정 */
-        {
-          secret: refreshTokenSecret,
-          expiresIn: '24h' /* 24시간 */,
-        },
-      ),
-      /* 엑세스 토큰 발급 */
-      accessToken: await this.jwtService.signAsync(
-        /* 1. JWT payload 설정 */
-        {
-          sub: user.id,
-          role: user.role,
-          type: 'access',
-        },
-        /* 2.JWT signing & 만료 옵션 지정 */
-        {
-          secret: accessTokenSecret,
-          expiresIn: 300 /* 300초(5분) */,
-        },
-      ),
+      refreshToken: await this.issueToken(user, true),
+      accessToken: await this.issueToken(user, false),
     };
   }
 }
