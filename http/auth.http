@@ -3,7 +3,8 @@
 @api = auth
 @test_id = 1
 @encoded = c3R5bGVAZ21haWwuY29tOjFxMnczZTRyISE=
-@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsInJvbGUiOiJVU0VSIiwidHlwZSI6InVzZXIiLCJpYXQiOjE3NDQyMDg3MjIsImV4cCI6MTc0NDIwOTAyMn0.t26ofpAqz2PbKHYhULNS0JjhA1Tcnews33y_ijCvhLY
+@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiVVNFUiIsInR5cGUiOiJ1c2VyIiwiaWF0IjoxNzQ0MjkyODkxLCJleHAiOjE3NDQyOTMxOTF9.C3_bzEp1aVsWCMlt0knGb-DFcLC9xHVqv2Mi4QdO--g
+@refresh_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsInJvbGUiOiJVU0VSIiwidHlwZSI6InJlZnJlc2giLCJpYXQiOjE3NDQyOTcwOTcsImV4cCI6MTc0NDM4MzQ5N30.qwkvFz6iBE_A8vugInTtfIB6RVr5rhh9pEdK3TFRjxE
 ### 신규 계정 등록
 POST http://{{hostname}}:{{port}}/{{api}}/register
 Authorization: Basic {{encoded}}
@@ -24,3 +25,7 @@ Content-Type: application/json
 ### ACCESS TOKEN 검증
 GET http://{{hostname}}:{{port}}/{{api}}/private
 Authorization: Bearer {{access_token}}
+
+### REFRESH TOKEN 재발급
+POST http://{{hostname}}:{{port}}/{{api}}/token/access
+Authorization: Bearer {{refresh_token}}

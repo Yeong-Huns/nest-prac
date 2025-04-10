@@ -9,7 +9,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthGuard } from '@nestjs/passport';
 import { User } from '../user/entities/user.entity';
 import { LocalAuthGuard } from './strategy/local.strategy';
 import { JwtAuthGuard } from './strategy/jwt.strategy';
@@ -29,6 +28,12 @@ export class AuthController {
   loginUser(@Headers('authorization') token: string) {
     /* authorization: Basic $token */
     return this.authService.login(token);
+  }
+
+  @Post('token/access')
+  async rotateAccessToken(@Headers('authorization') refreshToken: string) {
+    const payload = await this.authService.parseBearerToken(refreshToken, true);
+    return { accessToken: await this.authService.issueToken(payload, false) };
   }
 
   /* Passport test */

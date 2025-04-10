@@ -1,10 +1,16 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { User } from '../user/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, TokenExpiredError } from '@nestjs/jwt';
+import { Role } from '../user/type/user.role';
+import { envVariables } from '../common/const/env.const';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +27,10 @@ export class AuthService {
       throw new BadRequestException('올바르지않은 토큰 포맷');
 
     /* 추출한 토큰을 base64 디코딩으로 이메일, 비밀번호 나눔 */
-    const [, token] = tokenSplit;
+    const [basic, token] = tokenSplit;
+    if (basic.toLowerCase() !== 'basic')
+      throw new BadRequestException('올바르지않은 토큰 포맷');
+
     const decoded = Buffer.from(token, 'base64').toString('utf-8');
     const decodedTokenSplit = decoded.split(':');
     if (decodedTokenSplit.length !== 2)
@@ -31,6 +40,39 @@ export class AuthService {
     const [email, password] = decodedTokenSplit;
 
     return { email, password };
+  }
+
+  async parseBearerToken(authHeader: string, isRefreshToken: boolean) {
+    /* 헤더 형식 검증 */
+    const tokenSplit = authHeader.split(' ');
+    if (tokenSplit.length !== 2 || tokenSplit[0].toLowerCase() !== 'bearer') {
+      throw new BadRequestException('Bearer 토큰 형식이 올바르지 않습니다');
+    }
+
+    /* SECRET 선택 */
+    const secret = isRefreshToken
+      ? this.configService.get<string>(envVariables.refreshTokenSecret)
+      : this.configService.get<string>(envVariables.accessTokenSecret);
+
+    try {
+      /* 토큰 검증 */
+      const token = tokenSplit[1];
+      const payload = await this.jwtService.verifyAsync(token, { secret });
+
+      /* 토큰 타입 검증 */
+      const expectedType = isRefreshToken ? 'refresh' : 'access';
+      if (payload.type !== expectedType) {
+        throw new BadRequestException(`${expectedType} 토큰이 필요합니다`);
+      }
+
+      return payload;
+    } catch (e) {
+      if (e instanceof BadRequestException) throw e;
+      if (e instanceof TokenExpiredError) {
+        throw new UnauthorizedException('만료된 토큰');
+      }
+      throw new UnauthorizedException('유효하지 않은 토큰');
+    }
   }
 
   async registerUser(rawToken: string) {
@@ -43,7 +85,7 @@ export class AuthService {
     /* 비밀번호 암호화! */
     const hash = await bcrypt.hash(
       password,
-      this.configService.get<number>('HASH_ROUNDS'),
+      this.configService.get<number>(envVariables.hashRounds),
     );
 
     /* DB 저장 */
@@ -67,18 +109,18 @@ export class AuthService {
     return user;
   }
 
-  async issueToken(user: User, isRefreshToken: boolean) {
+  async issueToken(user: { id: number; role: Role }, isRefreshToken: boolean) {
     const accessTokenSecret = this.configService.get<string>(
-      'ACCESS_TOKEN_SECRET',
+      envVariables.accessTokenSecret,
     );
     const refreshTokenSecret = this.configService.get<string>(
-      'REFRESH_TOKEN_SECRET',
+      envVariables.refreshTokenSecret,
     );
     return await this.jwtService.signAsync(
       {
         sub: user.id,
         role: user.role,
-        type: isRefreshToken ? 'refresh' : 'user',
+        type: isRefreshToken ? 'refresh' : 'access',
       },
       {
         secret: isRefreshToken ? refreshTokenSecret : accessTokenSecret,
